@@ -6,18 +6,25 @@ interface Winner {
   streak: number;
 }
 
-interface FinalScoreboardProps {
-  socket: WebSocket | null;
+interface HighscoreEvent {
+  trivia_id: string;
+  type: 'highscore';
+  // winners es una lista de jsons con los campos username, score y streak
+  winners: Winner[];
 }
 
-const FinalScoreboard: React.FC<FinalScoreboardProps> = ({ socket }) => {
-  const [winners, setWinners] = useState<Winner[]>([]);
+interface FinalScoreboardProps {
+  socket: WebSocket | null;
+  winners: Winner[];
+}
+
+const FinalScoreboard: React.FC<FinalScoreboardProps> = ({ socket, winners }) => {
 
   useEffect(() => {
     const handleHighscoreMessage = (event: MessageEvent) => {
-      const data = JSON.parse(event.data);
+      const data: HighscoreEvent = JSON.parse(event.data);
       if (data.type === 'highscore') {
-        setWinners(data.winners);
+        console.log('Evento HIGHSCORE recibido:', data);
       }
     };
 
@@ -32,27 +39,37 @@ const FinalScoreboard: React.FC<FinalScoreboardProps> = ({ socket }) => {
     };
   }, [socket]);
 
+  // Iniciar un temporizador de 10 segundos para la redirección automática
+  useEffect(() => {
+    const redirectTimer = setTimeout(() => {
+      handleExitTrivia();
+    }, 10000); // 10 segundos
+
+    // Limpia el temporizador si el componente se desmonta antes de que se complete
+    return () => clearTimeout(redirectTimer);
+  }, []);
+
+  const handleExitTrivia = () => {
+    // Aquí puedes realizar cualquier limpieza o desconexión necesaria antes de redirigir al usuario.
+    // Por ejemplo, cerrar la conexión del socket si es necesario.
+
+    // Redirigir al usuario a la página de inicio
+    window.location.href = '/';
+  };
+
+  // Muestra los top tres ganadores, winners solamente tiene a los top tres
   return (
     <div>
-      <h2>Tabla de Posiciones Final</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Nombre de Usuario</th>
-            <th>Puntuación</th>
-            <th>Racha</th>
-          </tr>
-        </thead>
-        <tbody>
-          {winners.map((winner, index) => (
-            <tr key={index}>
-              <td>{winner.username}</td>
-              <td>{winner.score}</td>
-              <td>{winner.streak}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <h1>Trivia finalizada</h1>
+      <h2>Top 3</h2>
+      <ol>
+        {winners.map((winner, index) => (
+          <li key={index}>
+            {index + 1}. {winner.username} - {winner.score} puntos
+          </li>
+        ))}
+      </ol>
+      <button onClick={handleExitTrivia}>Salir</button>
     </div>
   );
 };

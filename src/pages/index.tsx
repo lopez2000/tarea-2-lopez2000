@@ -5,8 +5,8 @@ import { useState } from 'react';
 const Home = ({ socket }: { socket: WebSocket | null }) => {
   const router = useRouter();
 
-  const [username, setUsername] = useState('');
   const [studentNumber, setStudentNumber] = useState('');
+  const [username, setUsername] = useState('');
 
   const handleJoinClick = () => {
     if (!studentNumber) {
@@ -17,7 +17,7 @@ const Home = ({ socket }: { socket: WebSocket | null }) => {
     const joinEvent = {
       type: 'join',
       id: studentNumber.toString(),
-      username: username || studentNumber.toString(),
+      username: username.toString()
     };
 
     if (socket) {
@@ -47,12 +47,6 @@ const Home = ({ socket }: { socket: WebSocket | null }) => {
   return (
     <div>
       <h1>Dungeons & Trivia</h1>
-      <input
-        type="text"
-        placeholder="Nombre de usuario"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-      />
       <input
         type="text"
         placeholder="Número de alumno"
